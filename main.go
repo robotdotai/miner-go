@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"math/big"
-	"strings"
 	"sync"
 	"time"
 
@@ -91,7 +90,9 @@ func main() {
 		logger.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 	logger.Info(color.GreenString("Successfully connected to Ethereum client."))
-	privateKey = strings.TrimLeft(privateKey, "0x")
+	if privateKey[:2] == "0x" {
+		privateKey = privateKey[2:]
+	}
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
 		logger.Fatalf("Error in parsing private key: %v", err)

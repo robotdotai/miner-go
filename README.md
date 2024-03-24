@@ -9,7 +9,7 @@
    - go build .
 
 1. **Configuration**:
-   - Customize your Ethereum private key and the contract address in the `init()` function.
+   - Customize your wallet private key and the contract address in the `init()` function.
    - Adjust the number of mining workers as needed.
 
 2. **Running the Tool**:
