@@ -23,7 +23,6 @@ import (
 var (
 	rpcURL          string
 	privateKey      string
-	referralAddress string
 	contractAddress string
 	workerCount     int
 	logger          = logrus.New()
@@ -32,8 +31,7 @@ var (
 func init() {
 	flag.StringVar(&rpcURL, "rpcURL", "https://babel-api.mainnet.iotex.io", "URL for chain rpc")
 	flag.StringVar(&privateKey, "privateKey", "", "Private key for the Ethereum account")
-	flag.StringVar(&referralAddress, "referralAddress", "0x6cf222591d0CB585feD40910187ECe9804c6b686", "Address of the RobotToken contract")
-	flag.StringVar(&contractAddress, "contractAddress", "0xe5F8dBf17c9eC8eb327D191dBA74e36970877587", "Address of the RobotToken contract")
+	flag.StringVar(&contractAddress, "contractAddress", "0x89B4FFd1DC4bb473Fc42fd64e37328127e3E3259", "Address of the RobotToken contract")
 	flag.IntVar(&workerCount, "workerCount", 10, "Number of concurrent mining workers")
 
 	logger.SetFormatter(&logrus.TextFormatter{
@@ -109,9 +107,8 @@ func main() {
 		logger.Fatalf("Failed to create transactor: %v", err)
 	}
 
-	referralAddr := common.HexToAddress(referralAddress)
 	contractAddr := common.HexToAddress(contractAddress)
-	contract, err := abi.NewRobotToken(contractAddr, client)
+	contract, err := abi.NewRobotPoint(contractAddr, client)
 	if err != nil {
 		logger.Fatalf("Failed to instantiate a Token contract: %v", err)
 	}
@@ -123,7 +120,9 @@ func main() {
 	}
 	logger.Infof(color.GreenString("Contract Name: %s"), color.RedString(contractName))
 
-	challenge, err := contract.Challenge(nil)
+	challenge, err := contract.Challenge(&bind.CallOpts{
+		From: auth.From,
+	})
 	if err != nil {
 		logger.Fatalf("Failed to get challenge: %v", err)
 	}
@@ -177,7 +176,7 @@ func main() {
 		wg.Wait()
 		logger.Infof(color.GreenString("Successfully discovered a valid nonce: %d"), nonce)
 		logger.Info(color.YellowString("Submitting mining transaction with nonce..."))
-		tx, err := contract.Mine(auth, nonce, referralAddr)
+		tx, err := contract.Mine(auth, nonce, big.NewInt(0))
 		if err != nil {
 			logger.Fatalf("Failed to submit mine transaction: %v", err)
 		}
